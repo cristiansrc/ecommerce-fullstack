@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessSignoff": true,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "rootDir": "src/app"
+  },
+  "files": ["main.ts"],
+  "include": ["src/**/*.ts"]
+}

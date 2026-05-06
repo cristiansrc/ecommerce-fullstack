@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecommerce-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ecommerce}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+      POSTGRES_DB: ${POSTGRES_DB:-ecommerce_db}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Opcional: inicializar datos de prueba (comentar en prod)
+      - ./init-data.sql:/docker-entrypoint-initdb.d/01-init-data.sql
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecommerce} -d ${POSTGRES_DB:-ecommerce_db}"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-ecommerce_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-ecommerce}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+      SERVER_PORT: 8080
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkeychangeit123456789abcdef}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    networks:
+      - ecommerce-network
+
+  bff:
+    build:
+      context: ./bff
+      dockerfile: Dockerfile
+    container_name: ecommerce-bff
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      API_URL: http://backend:${BACKEND_PORT:-8080}/api
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET_KEY:-supersecretkeychangeit123456789abcdef}
+    ports:
+      - "${BFF_PORT:-3000}:3000"
+    networks:
+      - ecommerce-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecommerce-frontend
+    depends_on:
+      - bff
+    ports:
+      - "4200:80"
+    networks:
+      - ecommerce-network
+
+volumes:
+  postgres_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge

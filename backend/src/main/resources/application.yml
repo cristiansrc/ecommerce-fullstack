@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
+    username: ${SPRING_DATASOURCE_USERNAME:ecom_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:secret_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # IMPORTANT: Only validate, Flyway owns schema
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:miSecretaClaveJWTDeAlMenos128Bits}
+    expiration: ${JWT_EXPIRATION:86400000} # 24 horas en ms
+
+logging:
+  level:
+    com.ecommerce: DEBUG
+    org.springframework.web: INFO
