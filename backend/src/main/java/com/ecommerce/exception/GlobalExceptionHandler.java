@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleOtherErrors(Exception ex) {
         var error = Map.of(
             "code", "INTERNAL_ERROR",
-            "message": "Error interno: " + ex.getMessage()
+            "message", "Error interno: " + ex.getMessage()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
